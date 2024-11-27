@@ -15,4 +15,4 @@ connection.connect((err)=>{
     console.log('connected to database medic-shop')
 })
 
-module.exports = connection
+export default connection
