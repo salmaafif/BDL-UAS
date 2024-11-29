@@ -3,113 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple E-commerce</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Medic Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+        }
+        h1 {
+            color: #333;
+        }
+        nav {
+            background-color: #f4f4f4;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #333;
+            text-decoration: none;
+            padding: 5px 5px;
+        }
+        form {
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        #productList, #categoryList, #discountList, #orderItems {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 200px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8">Simple E-commerce</h1>
-        <div id="products" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        <div id="cart" class="mt-8">
-            <h2 class="text-2xl font-bold mb-4">Shopping Cart</h2>
-            <ul id="cart-items"></ul>
-            <p class="mt-4">Total: $<span id="cart-total">0.00</span></p>
-            <button id="checkout" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Checkout</button>
-        </div>
+<body>
+    <h1>MEDIC SHOP</h1>
+    <nav>
+        <a href="#" onclick="showSection('products')">Products</a>
+        <a href="#" onclick="showSection('categories')">Categories</a>
+        <a href="#" onclick="showSection('discounts')">Discounts</a>
+        <a href="#" onclick="showSection('orders')">Orders</a>
+    </nav>
+
+    <div id="products" class="section">
+        <h2>Products</h2>
+        <form id="addProductForm">
+            <input type="text" id="productName" placeholder="Product Name" required>
+            <input type="text" id="productDescription" placeholder="Description">
+            <input type="number" id="productPrice" placeholder="Price" step="0.01" required>
+            <input type="number" id="productStock" placeholder="Stock" required>
+            <select id="productCategory"></select>
+            <button type="submit">Add Product</button>
+        </form>
+        <div id="productList"></div>
     </div>
 
-    <script>
-        const productsContainer = document.getElementById('products');
-        const cartItemsContainer = document.getElementById('cart-items');
-        const cartTotalElement = document.getElementById('cart-total');
-        const checkoutButton = document.getElementById('checkout');
+    <div id="categories" class="section" style="display:none;">
+        <h2>Categories</h2>
+        <form id="addCategoryForm">
+            <input type="text" id="categoryName" placeholder="Category Name" required>
+            <button type="submit">Add Category</button>
+        </form>
+        <div id="categoryList"></div>
+    </div>
 
-        let products = [];
-        let cart = [];
+    <div id="discounts" class="section" style="display:none;">
+        <h2>Discounts</h2>
+        <form id="addDiscountForm">
+            <input type="text" id="discountName" placeholder="Discount Name" required>
+            <select id="discountType">
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed</option>
+            </select>
+            <input type="number" id="discountAmount" placeholder="Amount" step="0.01" required>
+            <input type="date" id="discountStartDate" required>
+            <input type="date" id="discountEndDate" required>
+            <input type="text" id="discountApplicableTo" placeholder="Applicable To">
+            <button type="submit">Add Discount</button>
+        </form>
+        <div id="discountList"></div>
+    </div>
 
-        function fetchProducts() {
-            fetch('http://localhost:3000/api/products')
-                .then(response => response.json())
-                .then(data => {
-                    products = data;
-                    renderProducts();
-                })
-                .catch(error => console.error('Error fetching products:', error));
-        }
+    <div id="orders" class="section" style="display:none;">
+        <h2>Make an Order</h2>
+        <form id="addOrderItemForm">
+            <select id="orderProduct"></select>
+            <input type="number" id="orderQuantity" placeholder="Quantity" required>
+            <button type="submit">Add to Order</button>
+        </form>
+        <div id="orderItems"></div>
+        <button id="placeOrderBtn">Place Order</button>
+    </div>
 
-        function renderProducts() {
-            productsContainer.innerHTML = products.map(product => `
-                <div class="bg-white p-4 rounded shadow">
-                    <h3 class="text-xl font-bold">${product.name}</h3>
-                    <p>${product.description}</p>
-                    <p class="mt-2">Price: $${product.price}</p>
-                    <p>Stock: ${product.stock}</p>
-                    <p>Category: ${product.category_name}</p>
-                    <button onclick="addToCart(${product.product_id})" class="mt-2 bg-green-500 text-white px-2 py-1 rounded">Add to Cart</button>
-                </div>
-            `).join('');
-        }
-
-        function addToCart(productId) {
-            const product = products.find(p => p.product_id === productId);
-            if (product) {
-                const existingItem = cart.find(item => item.product_id === productId);
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    cart.push({ ...product, quantity: 1 });
-                }
-                renderCart();
-            }
-        }
-
-        function renderCart() {
-            cartItemsContainer.innerHTML = cart.map(item => `
-                <li class="mb-2">
-                    ${item.name} - Quantity: ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}
-                    <button onclick="removeFromCart(${item.product_id})" class="ml-2 bg-red-500 text-white px-2 py-1 rounded">Remove</button>
-                </li>
-            `).join('');
-
-            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            cartTotalElement.textContent = total.toFixed(2);
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.product_id !== productId);
-            renderCart();
-        }
-
-        checkoutButton.addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-
-            const orderItems = cart.map(item => ({
-                product_id: item.product_id,
-                quantity: item.quantity,
-                price: item.price
-            }));
-
-            fetch('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ items: orderItems })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(`Order placed successfully! Order ID: ${data.orderId}`);
-                cart = [];
-                renderCart();
-            })
-            .catch(error => console.error('Error placing order:', error));
-        });
-
-        fetchProducts();
-    </script>
+    <script src="js/products.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/discounts.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
 
